@@ -1,0 +1,48 @@
+import { test } from '@playwright/test';
+
+test('Myntra Product Analysis', async ({ page }) => {
+
+    await page.goto('https://www.myntra.com/boy-tshirts');
+
+    const products = page.locator("//div[@class='search-searchProductsContainer row-base']/descendant::li[@class='product-base']"
+    );
+
+    const totalProducts = await products.count();
+
+    console.log("Total Products :", totalProducts);
+
+    let minPrice = 10000;
+    let minProduct = "";
+    let allPrices = [];
+
+    for (let i = 0; i < totalProducts; i++) {
+
+        const product = products.nth(i);
+
+        const productName = await product.locator("//descendant::h4[@class='product-product']").textContent();
+
+        let priceText = "";
+
+        if (await product.locator("//descendant::span[@class='product-discountedPrice']").count() > 0) {
+
+            priceText = await product.locator("//descendant::span[@class='product-discountedPrice']").textContent();
+
+        } else {
+
+            priceText = await product.locator("//descendant::div[@class='product-price']/descendant::span[not(@class)]").textContent();
+        }
+
+        const price = parseInt(priceText.replace("Rs. ", ""));
+
+        allPrices.push(price);
+
+        if (price < minPrice) {
+            minPrice = price;
+            minProduct = productName;
+        }
+    }
+
+    console.log("All Product Prices :", allPrices);
+    console.log("Minimum Price :", minPrice);
+    console.log("Product Name of Minimum Price :", minProduct);
+});
